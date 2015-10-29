@@ -6,9 +6,6 @@
 #include <Adina/InputManager.h>
 #include <Adina/SpriteBatch.h>
 #include <Adina/SpriteFont.h>
-#include <Adina/AudioEngine.h>
-#include <Adina/ParticleEngine2D.h>
-#include <Adina/ParticleBatch2D.h>
 
 #include "Player.h"
 #include "Level.h"
@@ -77,9 +74,6 @@ private:
 	Adina::SpriteBatch m_agentSpriteBatch; ///< Draws all agents
 	Adina::SpriteBatch m_hudSpriteBatch;
 
-	Adina::ParticleEngine2D m_particleEngine;
-	Adina::ParticleBatch2D* m_bloodParticleBatch;
-
 	std::vector<Level*> m_levels; ///< vector of all levels
 
 	int m_screenWidth = 1024;
@@ -98,8 +92,6 @@ private:
 	int m_numZombiesKilled; ///< Zombies killed by player
 
 	Adina::SpriteFont* m_spriteFont;
-
-	Adina::AudioEngine m_audioEngine;
 
 	GameState m_gameState;
 };

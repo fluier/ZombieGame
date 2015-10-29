@@ -45,7 +45,7 @@ void Human::update(const std::vector<std::string>& levelData,
 	_position += m_direction * _speed * deltaTime;
 
     // Randomly change direction every 20 frames
-    if (_frames == 20) {
+    if (_frames == 60) {
         m_direction = glm::rotate(m_direction, randRotate(randomEngine));
         _frames = 0;
     } else {

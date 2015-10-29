@@ -55,7 +55,7 @@ bool Agent::collideWithLevel(const std::vector<std::string>& levelData) {
 // Circular collision
 bool Agent::collideWithAgent(Agent* agent) {
 
-    // Minimum distance before there is a collision
+    /// Minimum distance before there is a collision
     const float MIN_DISTANCE = AGENT_RADIUS * 2.0f;
 
     // Center position of this agent
@@ -97,7 +97,7 @@ void Agent::draw(Adina::SpriteBatch& _spriteBatch) {
     destRect.z = AGENT_WIDTH;
     destRect.w = AGENT_WIDTH;
 
-    _spriteBatch.draw(destRect, uvRect, m_textureID, 0.0f, _color, m_direction);
+    _spriteBatch.draw(destRect, uvRect, m_textureID, 0.0f, _color);
 }
 
 bool Agent::applyDamage(float damage) {
@@ -117,7 +117,7 @@ void Agent::checkTilePosition(const std::vector<std::string>& levelData,
  
     // Get the position of this corner in grid-space
     glm::vec2 gridPos = glm::vec2(floor(x / (float)TILE_WIDTH),
-                                      floor(y / (float)TILE_WIDTH));
+                                  floor(y / (float)TILE_WIDTH));
 
     // If we are outside the world, just return
     if (gridPos.x < 0 || gridPos.x >= levelData[0].size() ||

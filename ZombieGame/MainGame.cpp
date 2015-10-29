@@ -52,18 +52,14 @@ void MainGame::run() {
 
 	initLevel();
 
-	Adina::Music music = m_audioEngine.loadMusic("Sound/XYZ.ogg");
-	music.play(-1);
-
 	gameLoop();
 }
 
 void MainGame::initSystems() {
 	// Initialize the game engine
-	MyEngine::init();
+	Adina::init();
 
 	// Initialize sound, must happen after Bengine::init
-	m_audioEngine.init();
 
 	// Create our window
 	m_window.create("ZombieGame", m_screenWidth, m_screenHeight, 0);
@@ -79,7 +75,7 @@ void MainGame::initSystems() {
 	m_hudSpriteBatch.init();
 
 	// Initialize sprite font
-	m_spriteFont = new MyEngine::SpriteFont("Fonsts/COMICATE.TTF", 64);
+	m_spriteFont = new Adina::SpriteFont("Fonsts/COMICATE.TTF", 64);
 
 	// Set up the camera
 	m_camera.init(m_screenWidth, m_screenHeight);
@@ -87,13 +83,7 @@ void MainGame::initSystems() {
 	m_hudCamera.setPosition(glm::vec2(m_screenWidth / 2, m_screenHeight / 2));
 
 	// Initialize particles
-	m_bloodParticleBatch = new MyEngine::ParticleBatch2D;
-	m_bloodParticleBatch->init(1000, 0.05f, MyEngine::ResourceManager::getTexture("Textures/particle.png"),
-		[](MyEngine::Particle2D& particle, float deltaTime){ //lambda functions
-		particle.position += particle.velocity * deltaTime;
-		particle.color.a = (GLubyte)(particle.life * 255.0f);
-	});
-	m_particleEngine.addParticleBatch(m_bloodParticleBatch);
+
 }
 
 void MainGame::initLevel() {
@@ -128,9 +118,6 @@ void MainGame::initLevel() {
 
 	// Set up the players guns
 	const float BULLET_SPEED = 20.0f;
-	m_player->addGun(new Gun("Magnum", 200, 1, 0.1f, 30, BULLET_SPEED, m_audioEngine.loadSoundEffect("Sound/shots/pistol.wav")));
-	m_player->addGun(new Gun("Shotgun", 500, 100, 1.0f, 4, BULLET_SPEED, m_audioEngine.loadSoundEffect("Sound/shots/shotgun.wav")));
-	m_player->addGun(new Gun("MP5", 10, 1, 0.1f, 30, BULLET_SPEED, m_audioEngine.loadSoundEffect("Sound/shots/cg1.wav")));
 }
 
 void MainGame::initShaders() {
@@ -152,12 +139,12 @@ void MainGame::gameLoop() {
 	const float MAX_DELTA_TIME = 1.0f; // Maximum size of deltaTime
 
 	// Used to cap the FPS
-	MyEngine::FPSLimiter fpsLimiter;
-	fpsLimiter.setMaxFPS(60000.0f);
+	Adina::FpsLimiter fpsLimiter;
+	fpsLimiter.setMaxtFPS(60000.0f);
 
 	// Zoom out the camera by 4x
 	const float CAMERA_SCALE = 1.0f / 3.0f;
-	m_camera.setScale(CAMERA_SCALE);
+	m_camera.setScaleFactor(CAMERA_SCALE);
 
 	// Start our previousTicks variable
 	float previousTicks = SDL_GetTicks();
@@ -187,7 +174,6 @@ void MainGame::gameLoop() {
 			// Update all physics here and pass in deltaTime
 			updateAgents(deltaTime);
 			updateBullets(deltaTime);
-			m_particleEngine.update(deltaTime);
 			// Since we just took a step that is length deltaTime, subtract from totalDeltaTime
 			totalDeltaTime -= deltaTime;
 			// Increment our frame counter so we can limit steps to MAX_PHYSICS_STEPS
@@ -245,7 +231,7 @@ void MainGame::updateAgents(float deltaTime) {
 
 		// Collide with player
 		if (m_zombies[i]->collideWithAgent(m_player)) {
-			MyEngine::fatalError("YOU LOSE");
+			Adina::fatalError("YOU LOSE");
 		}
 	}
 
@@ -354,10 +340,16 @@ void MainGame::checkVictory() {
 			m_numHumansKilled, m_numZombiesKilled, m_humans.size() - 1, m_levels[m_currentLevel]->getNumHumans());
 
 		// Easy way to end the game :P
-		MyEngine::fatalError("");
+		Adina::fatalError("");
 	}
 }
+/*
+processInput()
+keep looping until there are no more events to process
 
+if the event is to QUIT, will set the state to exit
+else set the events in input manager
+*/
 void MainGame::processInput() {
 	SDL_Event evnt;
 	//Will keep looping until there are no more events to process
@@ -397,13 +389,11 @@ void MainGame::drawGame() {
 	glActiveTexture(GL_TEXTURE0);
 
 	// Make sure the shader uses texture 0
-	GLint textureUniform = m_textureProgram.getUniformLocation("mySampler");
-	glUniform1i(textureUniform, 0);
+	m_textureProgram.setUniform1i("mySampler",0);
 
 	// Grab the camera matrix
 	glm::mat4 projectionMatrix = m_camera.getCameraMatrix();
-	GLint pUniform = m_textureProgram.getUniformLocation("P");
-	glUniformMatrix4fv(pUniform, 1, GL_FALSE, &projectionMatrix[0][0]);
+	m_textureProgram.setUniformMatrix4fv("P", projectionMatrix);
 
 	// Draw the level
 	m_levels[m_currentLevel]->draw();
@@ -439,7 +429,6 @@ void MainGame::drawGame() {
 	m_agentSpriteBatch.renderBatch();
 
 	// Render the particles
-	m_particleEngine.draw(&m_agentSpriteBatch);
 
 	// Render the heads up display
 	drawHud();
@@ -455,18 +444,17 @@ void MainGame::drawHud() {
 	char buffer[256];
 
 	glm::mat4 projectionMatrix = m_hudCamera.getCameraMatrix();
-	GLint pUniform = m_textureProgram.getUniformLocation("P");
-	glUniformMatrix4fv(pUniform, 1, GL_FALSE, &projectionMatrix[0][0]);
+	m_textureProgram.setUniformMatrix4fv("P", projectionMatrix);
 
 	m_hudSpriteBatch.begin();
 
 	sprintf_s(buffer, "Num Humans %d", m_humans.size());
 	m_spriteFont->draw(m_hudSpriteBatch, buffer, glm::vec2(0, 0),
-		glm::vec2(0.5), 0.0f, MyEngine::ColorRGBA8(255, 255, 255, 255));
+		glm::vec2(0.5), 0.0f, Adina::ColorRGBA8(255, 255, 255, 255));
 
 	sprintf_s(buffer, "Num Zombies %d", m_zombies.size());
 	m_spriteFont->draw(m_hudSpriteBatch, buffer, glm::vec2(0, 36),
-		glm::vec2(0.5), 0.0f, MyEngine::ColorRGBA8(255, 255, 255, 255));
+		glm::vec2(0.5), 0.0f, Adina::ColorRGBA8(150, 255, 255, 255));
 
 	m_hudSpriteBatch.end();
 	m_hudSpriteBatch.renderBatch();
@@ -474,13 +462,5 @@ void MainGame::drawHud() {
 
 void MainGame::addBlood(const glm::vec2& position, int numParticles) {
 
-	static std::mt19937 randEngine(time(nullptr));
-	static std::uniform_real_distribution<float> randAngle(0.0f, 360.0f);
 
-	glm::vec2 vel(2.0f, 0.0f);
-	MyEngine::ColorRGBA8 col(255, 0, 0, 255);
-
-	for (int i = 0; i < numParticles; i++) {
-		m_bloodParticleBatch->addParticle(position, glm::rotate(vel, randAngle(randEngine)), col, 30.0f);
-	}
 }

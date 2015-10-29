@@ -3,16 +3,13 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include<Adina\AudioEngine.h>
-
 
 #include "Bullet.h"
 
 class Gun
 {
 public:
-    Gun(std::string name, int fireRate, int bulletsPerShot, float spread, float bulletDamage, float bulletSpeed,
-		Adina::SoundEffect fireEffect);
+    Gun(std::string name, int fireRate, int bulletsPerShot, float spread, float bulletDamage, float bulletSpeed);
     ~Gun();
 
 	void update(bool isMouseDown, const glm::vec2& position, const glm::vec2& direction, std::vector<Bullet>& bullets,
@@ -35,7 +32,5 @@ private:
     int _bulletDamage;
 
     int _frameCounter; ///< Counts frames so we know when to shoot bullets
-
-	Adina::SoundEffect m_fireEffect;
 };
 
