@@ -1,11 +1,14 @@
 #pragma once
 
-#include <Adina/Window.h>
-#include <Adina/GLSLProgram.h>
-#include <Adina/Camera2D.h>
-#include <Adina/InputManager.h>
-#include <Adina/SpriteBatch.h>
-#include <Adina/SpriteFont.h>
+#include <Adina\window.h>
+#include <Adina\GLSLProgram.h>
+#include <Adina\Camera2D.h>
+#include <Adina\InputManager.h>
+#include <Adina\SpriteBatch.h>
+#include <Adina\SpriteFont.h>
+#include <Adina\AudioEngine.h>
+#include <Adina\ParticleEngine2D.h>
+#include <Adina\ParticleBatch2D.h>
 
 #include "Player.h"
 #include "Level.h"
@@ -92,6 +95,11 @@ private:
 	int m_numZombiesKilled; ///< Zombies killed by player
 
 	Adina::SpriteFont* m_spriteFont;
+
+	Adina::AudioEngine m_audioEngine;
+
+	Adina::ParticleEngine2D m_particleEngine2D;
+	Adina::ParticleBatch2D* m_bloodParticleBatch;
 
 	GameState m_gameState;
 };

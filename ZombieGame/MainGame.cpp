@@ -1,10 +1,9 @@
 #include "MainGame.h"
 
-
-#include <Adina\Adina.h>
-#include <Adina\Timing.h>
-#include <Adina\my_Errors.h>
-#include <Adina\ResourceManager.h>
+#include <Adina/Adina.h>
+#include <Adina/Timing.h>
+#include <Adina/my_Errors.h>
+#include <Adina/ResourceManager.h>
 #include <random>
 #include <ctime>
 #include <algorithm>
@@ -52,14 +51,22 @@ void MainGame::run() {
 
 	initLevel();
 
+	Adina::Music music = m_audioEngine.loadMusic("Sound/XYZ.ogg");
+	music.play(-1);
+
 	gameLoop();
 }
-
+void updateBloodParticle(Adina::Particle2D& particle, float deltaTime)
+{
+	particle.position += particle.velocity * deltaTime;
+	particle.color.a = (GLubyte)(particle.life * 255.0f);
+}
 void MainGame::initSystems() {
 	// Initialize the game engine
 	Adina::init();
 
 	// Initialize sound, must happen after Bengine::init
+	m_audioEngine.init();
 
 	// Create our window
 	m_window.create("ZombieGame", m_screenWidth, m_screenHeight, 0);
@@ -83,7 +90,13 @@ void MainGame::initSystems() {
 	m_hudCamera.setPosition(glm::vec2(m_screenWidth / 2, m_screenHeight / 2));
 
 	// Initialize particles
-
+	m_bloodParticleBatch = new Adina::ParticleBatch2D;
+	m_bloodParticleBatch->init(1000, 0.05f, Adina::ResourceManager::getTexture("Textures/particle.png"),
+		[](Adina::Particle2D& particle, float deltaTime){ /////lambda functions
+		particle.position += particle.velocity * deltaTime;
+		particle.color.a = (GLubyte)(particle.life * 255.0f);
+	});
+	m_particleEngine2D.addParticleBatch(m_bloodParticleBatch);
 }
 
 void MainGame::initLevel() {
@@ -118,6 +131,9 @@ void MainGame::initLevel() {
 
 	// Set up the players guns
 	const float BULLET_SPEED = 20.0f;
+	m_player->addGun(new Gun("Magnum", 200, 1, 0.1f, 30, BULLET_SPEED, m_audioEngine.loadSoundEffect("Sound/shots/pistol.wav")));
+	m_player->addGun(new Gun("Shotgun", 500, 100, 1.0f, 4, BULLET_SPEED, m_audioEngine.loadSoundEffect("Sound/shots/shotgun.wav")));
+	m_player->addGun(new Gun("MP5", 10, 1, 0.1f, 30, BULLET_SPEED, m_audioEngine.loadSoundEffect("Sound/shots/cg1.wav")));
 }
 
 void MainGame::initShaders() {
@@ -174,6 +190,7 @@ void MainGame::gameLoop() {
 			// Update all physics here and pass in deltaTime
 			updateAgents(deltaTime);
 			updateBullets(deltaTime);
+			m_particleEngine2D.update(deltaTime);
 			// Since we just took a step that is length deltaTime, subtract from totalDeltaTime
 			totalDeltaTime -= deltaTime;
 			// Increment our frame counter so we can limit steps to MAX_PHYSICS_STEPS
@@ -343,13 +360,7 @@ void MainGame::checkVictory() {
 		Adina::fatalError("");
 	}
 }
-/*
-processInput()
-keep looping until there are no more events to process
 
-if the event is to QUIT, will set the state to exit
-else set the events in input manager
-*/
 void MainGame::processInput() {
 	SDL_Event evnt;
 	//Will keep looping until there are no more events to process
@@ -429,6 +440,7 @@ void MainGame::drawGame() {
 	m_agentSpriteBatch.renderBatch();
 
 	// Render the particles
+	m_particleEngine2D.draw(&m_agentSpriteBatch);
 
 	// Render the heads up display
 	drawHud();
@@ -454,13 +466,20 @@ void MainGame::drawHud() {
 
 	sprintf_s(buffer, "Num Zombies %d", m_zombies.size());
 	m_spriteFont->draw(m_hudSpriteBatch, buffer, glm::vec2(0, 36),
-		glm::vec2(0.5), 0.0f, Adina::ColorRGBA8(150, 255, 255, 255));
+		glm::vec2(0.5), 0.0f, Adina::ColorRGBA8(255, 255, 255, 255));
 
 	m_hudSpriteBatch.end();
 	m_hudSpriteBatch.renderBatch();
 }
+void MainGame::addBlood(const glm::vec2& position, int numParticles)
+{
+	static std::mt19937 randEngine(time(nullptr));
+	static std::uniform_real_distribution<float> randAngle(0.0f, 360.0f);
 
-void MainGame::addBlood(const glm::vec2& position, int numParticles) {
+	glm::vec2 vel(2.0f, 0.0f);
+	Adina::ColorRGBA8 col(255, 0, 0, 255);
 
-
+	for (int i = 0; i < numParticles; i++) {
+		m_bloodParticleBatch->addParticle(position, glm::rotate(vel, randAngle(randEngine)), col, 30.0f);
+	}
 }

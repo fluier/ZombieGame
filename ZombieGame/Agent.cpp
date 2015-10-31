@@ -97,7 +97,7 @@ void Agent::draw(Adina::SpriteBatch& _spriteBatch) {
     destRect.z = AGENT_WIDTH;
     destRect.w = AGENT_WIDTH;
 
-    _spriteBatch.draw(destRect, uvRect, m_textureID, 0.0f, _color);
+	_spriteBatch.draw(destRect, uvRect, m_textureID, 0.0f, _color, m_direction);
 }
 
 bool Agent::applyDamage(float damage) {
