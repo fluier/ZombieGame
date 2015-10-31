@@ -19,6 +19,8 @@ public:
     // When update returns true, delete bullet
 	bool update(const std::vector<std::string>& levelData,
 		float deltaTime);
+	// Return true when out of Range
+	bool outOfRange();
 
 	void draw(Adina::SpriteBatch& spriteBatch);
 
@@ -35,5 +37,6 @@ private:
     glm::vec2 _direction;
     float _damage;
     float _speed;
+	int m_Range = 60;
 };
 

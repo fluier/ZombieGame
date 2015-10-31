@@ -101,7 +101,7 @@ void MainGame::initSystems() {
 
 void MainGame::initLevel() {
 	// Level 1
-	m_levels.push_back(new Level("Levels/level1.txt"));
+	m_levels.push_back(new Level("Levels/level2.txt"));
 	m_currentLevel = 0;
 
 	m_player = new Player();
@@ -267,7 +267,7 @@ void MainGame::updateBullets(float deltaTime) {
 	// Update and collide with world
 	for (int i = 0; i < m_bullets.size();) {
 		// If update returns true, the bullet collided with a wall
-		if (m_bullets[i].update(m_levels[m_currentLevel]->getLevelData(), deltaTime)) {
+		if (m_bullets[i].update(m_levels[m_currentLevel]->getLevelData(), deltaTime) || m_bullets[i].outOfRange()) {
 			m_bullets[i] = m_bullets.back();
 			m_bullets.pop_back();
 		}

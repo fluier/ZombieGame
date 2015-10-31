@@ -23,9 +23,15 @@ Bullet::~Bullet() {
 bool Bullet::update(const std::vector<std::string>& levelData,
 	float deltaTime) {
 	_position += _direction * _speed * deltaTime;
+	m_Range--;
     return collideWithWorld(levelData);
 }
-
+bool Bullet::outOfRange(){
+	if (m_Range < 0){
+		return true;
+	}
+	return false;
+}
 void Bullet::draw(Adina::SpriteBatch& spriteBatch) {
     glm::vec4 destRect(_position.x + BULLET_RADIUS,
                        _position.y + BULLET_RADIUS,
@@ -33,11 +39,7 @@ void Bullet::draw(Adina::SpriteBatch& spriteBatch) {
                        BULLET_RADIUS * 2);
     const glm::vec4 uvRect(0.0f, 0.0f, 1.0f, 1.0f);
 
-	Adina::ColorRGBA8 color;
-    color.r = 75;
-    color.g = 75;
-    color.b = 75;
-    color.a = 255;
+	Adina::ColorRGBA8 color(75,75,75,255);
 
 	spriteBatch.draw(destRect, uvRect, Adina::ResourceManager::getTexture("Textures/circle.png").id, 0.0f, color);
 }
